@@ -1,11 +1,13 @@
 import { IMe, logout, me } from '@/utils/account'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, redirect } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Label } from './ui/label'
 import { toast } from './ui/use-toast'
 
 export default function LoginForm() {
+  const navigate = useNavigate()
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [currentUser, setCurrentUser] = useState<IMe | null>(null)
@@ -27,7 +29,8 @@ export default function LoginForm() {
   function handleLogout() {
     logout()
       .then(() => {
-        redirect('/me')
+        console.log('logout ok')
+        navigate('/login')
       })
       .catch((err) => {
         toast({
@@ -45,7 +48,10 @@ export default function LoginForm() {
     return (
       <Label>
         login username: {currentUser.username},{' '}
-        <span className='text-blue-500' onClick={handleLogout}>
+        <span
+          className='text-blue-500 hover:cursor-pointer'
+          onClick={handleLogout}
+        >
           click here
         </span>{' '}
         to logout.

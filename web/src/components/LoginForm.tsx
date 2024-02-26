@@ -11,10 +11,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { login } from '@/utils/account'
 import { useState } from 'react'
-import { redirect } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from './ui/use-toast'
 
 export default function LoginForm() {
+  const navigate = useNavigate()
   const { toast } = useToast()
 
   const [username, setUsername] = useState<string>('')
@@ -33,7 +34,8 @@ export default function LoginForm() {
   function handleLogin() {
     login(username, password)
       .then(() => {
-        redirect('/me')
+        console.log('login ok')
+        navigate('/me')
       })
       .catch((err) => {
         toast({
@@ -41,6 +43,12 @@ export default function LoginForm() {
           description: err.message,
         })
       })
+  }
+
+  function handleEnter(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter') {
+      handleLogin()
+    }
   }
 
   return (
@@ -57,10 +65,12 @@ export default function LoginForm() {
           <Input
             id='username'
             placeholder='username'
+            autoFocus={true}
             required
             type='username'
             value={username}
             onChange={handleUsernameChange}
+            onKeyDown={handleEnter}
           />
         </div>
         <div className='space-y-2'>
@@ -72,6 +82,7 @@ export default function LoginForm() {
             type='password'
             value={password}
             onChange={handlePasswordChange}
+            onKeyDown={handleEnter}
           />
         </div>
       </CardContent>

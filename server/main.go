@@ -14,6 +14,7 @@ import (
 type SessionConfig struct {
 	Name     string `json:"name" yaml:"name"`
 	Secret   string `json:"secret" yaml:"secret"`
+	Domain   string `json:"domain" yaml:"domain"`
 	LoginUrl string `json:"loginUrl" yaml:"loginUrl"`
 }
 
@@ -60,7 +61,7 @@ func main() {
 
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte(globalConfig.Session.Secret))))
 
-	e.POST("/login", func(c echo.Context) error {
+	e.POST("/api/login", func(c echo.Context) error {
 		reqBody := LoginReq{}
 		if err := c.Bind(&reqBody); err != nil {
 			return c.JSON(http.StatusBadRequest, err)
@@ -76,7 +77,7 @@ func main() {
 				if verifyPassword(user.Password, reqBody.Password) {
 					sess, _ := session.Get(globalConfig.Session.Name, c)
 					sess.Options = &sessions.Options{
-						Domain:   "localtest.me",
+						Domain:   globalConfig.Session.Domain,
 						Path:     "/",
 						MaxAge:   86400 * 7,
 						HttpOnly: true,
@@ -92,14 +93,20 @@ func main() {
 		return responseError(c, http.StatusForbidden, "Forbidden", "invalid username/password")
 	})
 
-	e.POST("/logout", func(c echo.Context) error {
+	e.POST("/api/logout", func(c echo.Context) error {
 		sess, _ := session.Get(globalConfig.Session.Name, c)
 		sess.Values["username"] = ""
+		sess.Options = &sessions.Options{
+			Domain:   globalConfig.Session.Domain,
+			Path:     "/",
+			MaxAge:   86400 * 7,
+			HttpOnly: true,
+		}
 		sess.Save(c.Request(), c.Response())
 		return c.JSON(http.StatusOK, LogoutResp{})
 	})
 
-	e.GET("/me", func(c echo.Context) error {
+	e.GET("/api/me", func(c echo.Context) error {
 		sess, _ := session.Get(globalConfig.Session.Name, c)
 		if v := sess.Values["username"]; v != nil {
 			if username, ok := v.(string); ok {
@@ -112,7 +119,7 @@ func main() {
 		return responseError(c, http.StatusUnauthorized, "Unauthorized", "unauthorized")
 	})
 
-	e.GET("/check-login", func(c echo.Context) error {
+	e.GET("/api/check-login", func(c echo.Context) error {
 		sess, _ := session.Get(globalConfig.Session.Name, c)
 		if v := sess.Values["username"]; v != nil {
 			if username, ok := v.(string); ok {
@@ -124,6 +131,12 @@ func main() {
 
 		return c.Redirect(http.StatusFound, globalConfig.Session.LoginUrl)
 	})
+
+	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		Root:  "dist",
+		Index: "index.html",
+		HTML5: true,
+	}))
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

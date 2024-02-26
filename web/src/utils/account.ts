@@ -33,7 +33,7 @@ export interface IMe {
 
 export async function me(): Promise<IMe> {
   const res = await axios.request({
-    method: 'POST',
+    method: 'GET',
     url: '/api/me',
     data: {},
   })
