@@ -12,18 +12,19 @@ import (
 )
 
 type SessionConfig struct {
-	Name   string `json:"name"`
-	Secret string `json:"secret"`
+	Name     string `json:"name" yaml:"name"`
+	Secret   string `json:"secret" yaml:"secret"`
+	LoginUrl string `json:"loginUrl" yaml:"loginUrl"`
 }
 
 type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" yaml:"username"`
+	Password string `json:"password" yaml:"password"`
 }
 
 type Config struct {
-	Session SessionConfig `json:"session"`
-	Users   []User        `json:"users"`
+	Session SessionConfig `json:"session" yaml:"session"`
+	Users   []User        `json:"users" yaml:"users"`
 }
 
 type LoginReq struct {
@@ -108,8 +109,20 @@ func main() {
 			}
 		}
 
-		return c.Redirect(http.StatusFound, "http://auth.localtest.me/login")
-		// return responseError(c, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+		return responseError(c, http.StatusUnauthorized, "Unauthorized", "unauthorized")
+	})
+
+	e.GET("/check-login", func(c echo.Context) error {
+		sess, _ := session.Get(globalConfig.Session.Name, c)
+		if v := sess.Values["username"]; v != nil {
+			if username, ok := v.(string); ok {
+				if username != "" {
+					return c.JSON(http.StatusOK, GetMeResp{Username: username})
+				}
+			}
+		}
+
+		return c.Redirect(http.StatusFound, globalConfig.Session.LoginUrl)
 	})
 
 	e.Logger.Fatal(e.Start(":1323"))
