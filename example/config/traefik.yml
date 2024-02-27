@@ -1,0 +1,18 @@
+log:
+  level: DEBUG
+  filePath: os.Stdout
+  format: common
+
+api:
+  debug: false
+  insecure: true
+  dashboard: true
+
+entryPoints:
+  web:
+    address: :80
+
+providers:
+  file:
+    watch: true
+    directory: /etc/traefik/dynamic-conf

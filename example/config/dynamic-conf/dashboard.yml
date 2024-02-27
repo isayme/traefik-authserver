@@ -1,0 +1,28 @@
+http:
+  routers:
+    dashboard:
+      service: dashboard
+      middlewares:
+        - auth
+      rule: Host(`dashboard.localtest.me`)
+
+    traefik-authserver:
+      service: traefik-authserver
+      rule: Host(`auth.localtest.me`)
+
+  services:
+    dashboard:
+      loadBalancer:
+        servers:
+          - url: http://traefik-proxy:8080
+
+    traefik-authserver:
+      loadBalancer:
+        servers:
+          - url: http://traefik-authserver:1323
+
+  middlewares:
+    auth:
+      forwardauth:
+        address: http://traefik-authserver:1323/api/check-login
+        authResponseHeaders: set-cookie

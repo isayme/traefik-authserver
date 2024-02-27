@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  traefik-proxy:
+    container_name: traefik-proxy
+    image: traefik:v2.10
+    ports:
+      - '80:80'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik.yml:/etc/traefik/traefik.yml
+      - ./config/dynamic-conf:/etc/traefik/dynamic-conf
+
+  traefik-authserver:
+    container_name: traefik-authserver
+    image: isayme/traefik-authserver
+    volumes:
+      - ./config/traefik-authserver.yml:/etc/traefik-authserver.yaml
+
+networks:
+  docker-app-net:
+    external: true

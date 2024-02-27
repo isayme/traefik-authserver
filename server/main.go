@@ -133,7 +133,7 @@ func main() {
 	})
 
 	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		Root:  "dist",
+		Root:  "public",
 		Index: "index.html",
 		HTML5: true,
 	}))

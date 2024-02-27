@@ -1,0 +1,9 @@
+session:
+  name: sid
+  secret: 123
+  domain: "localtest.me"
+  loginUrl: http://auth.localtest.me/login
+
+users:
+  - username: test
+    password: $2a$10$ozIShZ6AlmaHTWHR4tM/0uk5t5/uPuN3w4oL.rTxWFRdQLFUB9Iiy
