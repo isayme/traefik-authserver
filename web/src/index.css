@@ -1,8 +1,7 @@
 body {
-  margin: 0;
   display: flex;
-  place-items: center;
   justify-content: center;
+  margin-top: 5em;
   min-width: 320px;
   min-height: 100vh;
 }

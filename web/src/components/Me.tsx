@@ -2,7 +2,6 @@ import { IMe, logout, me } from '@/utils/account'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Label } from './ui/label'
 import { toast } from './ui/use-toast'
 
 export default function LoginForm() {
@@ -46,16 +45,19 @@ export default function LoginForm() {
 
   if (currentUser) {
     return (
-      <Label>
-        login username: {currentUser.username},{' '}
-        <span
-          className='text-blue-500 hover:cursor-pointer'
-          onClick={handleLogout}
-        >
-          click here
-        </span>{' '}
-        to logout.
-      </Label>
+      <div className='mx-auto text-center space-y-2'>
+        <h1 className='text-4xl font-semibold'>Hi, {currentUser.username}</h1>
+        <p className='text-sm text-gray-500 dark:text-gray-400'>
+          click{' '}
+          <span
+            className='text-blue-500 hover:cursor-pointer'
+            onClick={handleLogout}
+          >
+            here
+          </span>{' '}
+          to logout.
+        </p>
+      </div>
     )
   }
 
