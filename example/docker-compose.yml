@@ -16,7 +16,3 @@ services:
     image: isayme/traefik-authserver
     volumes:
       - ./config/traefik-authserver.yml:/etc/traefik-authserver.yaml
-
-networks:
-  docker-app-net:
-    external: true
