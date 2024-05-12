@@ -9,7 +9,9 @@ FROM node:22-alpine as node-builder
 WORKDIR /app
 
 COPY web .
-RUN npm i -g pnpm && pnpm i && pnpm build
+RUN npm i -g pnpm
+RUN pnpm i
+RUN pnpm build
 
 FROM alpine
 WORKDIR /app
