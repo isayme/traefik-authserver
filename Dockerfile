@@ -5,7 +5,7 @@ COPY server .
 RUN mkdir -p ./dist && GO111MODULE=on go mod download
 RUN go build -o ./dist/traefik-authserver main.go
 
-FROM node:22-alpine as node-builder
+FROM node:22-slim as node-builder
 WORKDIR /app
 
 COPY web .
