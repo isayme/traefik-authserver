@@ -7,6 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Github } from 'lucide-react'
+
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { login } from '@/utils/account'
@@ -50,6 +53,10 @@ export default function LoginForm() {
           description: err.message,
         })
       })
+  }
+
+  function handleLoginWithGithub() {
+    navigate('/oauth/github/login')
   }
 
   function handleEnter(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -103,6 +110,27 @@ export default function LoginForm() {
           Login
         </Button>
       </CardFooter>
+
+      <div className='relative'>
+        <div className='absolute inset-0 flex items-center '>
+          <Separator className='w-full opacity-80' />
+        </div>
+        <div className='relative flex justify-center text-xs uppercase'>
+          <span className='bg-background px-2 text-muted-foreground'>OR</span>
+        </div>
+      </div>
+
+      <div className='flex  justify-center items-center pt-3 pb-4'>
+        <Button
+          variant='outline'
+          className='flex'
+          type='button'
+          onClick={handleLoginWithGithub}
+        >
+          <Github className='mr-2 h-4 w-4' />
+          Login With GitHub
+        </Button>
+      </div>
     </Card>
   )
 }

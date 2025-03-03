@@ -4,36 +4,18 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/gorilla/sessions"
 	"github.com/isayme/go-config"
+	"github.com/isayme/traefik-authserver/server/src/conf"
+	"github.com/isayme/traefik-authserver/server/src/service"
+	"github.com/isayme/traefik-authserver/server/src/util"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"golang.org/x/crypto/bcrypt"
 )
-
-type SessionConfig struct {
-	Name     string `json:"name" yaml:"name"`
-	Secret   string `json:"secret" yaml:"secret"`
-	Domain   string `json:"domain" yaml:"domain"`
-	MaxAge   int    `json:"maxAge" yaml:"maxAge"`
-	HttpOnly bool   `json:"httpOnly" yaml:"httpOnly"`
-	Secure   bool   `json:"secure" yaml:"secure"`
-	LoginUrl string `json:"loginUrl" yaml:"loginUrl"`
-}
-
-type User struct {
-	Username string `json:"username" yaml:"username"`
-	Password string `json:"password" yaml:"password"`
-}
-
-type Config struct {
-	Session SessionConfig `json:"session" yaml:"session"`
-	Users   []User        `json:"users" yaml:"users"`
-}
 
 type LoginReq struct {
 	Username string `json:"username"`
@@ -55,8 +37,8 @@ type GetMeResp struct {
 }
 
 func main() {
-	globalConfig := Config{
-		Session: SessionConfig{
+	globalConfig := conf.Config{
+		Session: conf.SessionConfig{
 			Name:     "sid",
 			MaxAge:   86400 * 7,
 			HttpOnly: false,
@@ -65,11 +47,11 @@ func main() {
 	}
 	config.Parse(&globalConfig)
 
-	if isBlank(globalConfig.Session.Secret) {
+	if util.IsBlank(globalConfig.Session.Secret) {
 		log.Error("config session.secret is required")
 		return
 	}
-	if isBlank(globalConfig.Session.LoginUrl) {
+	if util.IsBlank(globalConfig.Session.LoginUrl) {
 		log.Error("config session.loginUrl is required")
 		return
 	}
@@ -91,7 +73,7 @@ func main() {
 		}
 
 		username := reqBody.Username
-		if isBlank(username) {
+		if util.IsBlank(username) {
 			return responseError(c, http.StatusBadRequest, "UsernameRequired", "username required")
 		}
 
@@ -113,7 +95,7 @@ func main() {
 
 	e.GET("/api/me", func(c echo.Context) error {
 		username := getSession(c, globalConfig.Session)
-		if !isBlank(username) {
+		if util.IsNotBlank(username) {
 			return c.JSON(http.StatusOK, GetMeResp{Username: username})
 		}
 		return responseError(c, http.StatusUnauthorized, "Unauthorized", "unauthorized")
@@ -121,7 +103,7 @@ func main() {
 
 	e.GET("/api/check-login", func(c echo.Context) error {
 		username := getSession(c, globalConfig.Session)
-		if !isBlank(username) {
+		if util.IsNotBlank(username) {
 			return c.JSON(http.StatusOK, GetMeResp{Username: username})
 		}
 
@@ -134,7 +116,7 @@ func main() {
 		forwardedProto := c.Request().Header.Get("X-Forwarded-Proto")
 		forwardedHost := c.Request().Header.Get("X-Forwarded-Host")
 		forwardedUri := c.Request().Header.Get("X-Forwarded-Uri")
-		if !isBlank(forwardedProto) && !isBlank(forwardedHost) && !isBlank(forwardedUri) {
+		if util.IsNotBlank(forwardedProto) && util.IsNotBlank(forwardedHost) && util.IsNotBlank(forwardedUri) {
 			nextUrl := fmt.Sprintf("%s://%s%s", forwardedProto, forwardedHost, forwardedUri)
 			query := uri.Query()
 			query.Add("next_url", nextUrl)
@@ -145,6 +127,42 @@ func main() {
 		return c.Redirect(http.StatusFound, location)
 	})
 
+	githubConfig := globalConfig.Github
+	if util.IsNotBlank(githubConfig.ClientId) && util.IsNotBlank(githubConfig.ClientSecret) {
+		githubService := service.NewGithub(&githubConfig)
+
+		e.GET("/oauth/github/login", func(c echo.Context) error {
+			url := githubService.GenAuthorizeUrl()
+			return c.Redirect(http.StatusFound, url)
+		})
+
+		e.GET("/oauth/github/redirect", func(c echo.Context) error {
+			code := c.QueryParam("code")
+			// state := c.QueryParam("state")
+
+			ctx := c.Request().Context()
+
+			accessTokenInfo, err := githubService.ExchangeAccessToken(ctx, code)
+			if err != nil {
+				return responseError(c, http.StatusBadRequest, "", err.Error())
+			}
+
+			githubUser, err := githubService.GetUser(ctx, accessTokenInfo.AccessToken)
+			if err != nil {
+				return responseError(c, http.StatusBadRequest, "", err.Error())
+			}
+
+			for _, user := range globalConfig.Users {
+				if user.Github == githubUser.Login {
+					setSession(c, globalConfig.Session, user.Username)
+					return c.JSON(http.StatusOK, LoginResp{Username: user.Username})
+				}
+			}
+
+			return responseError(c, http.StatusBadRequest, "NotFound", "no user bound with current github user")
+		})
+	}
+
 	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		Root:  "public",
 		Index: "index.html",
@@ -154,11 +172,7 @@ func main() {
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
-func isBlank(s string) bool {
-	return strings.TrimSpace(s) == ""
-}
-
-func setSession(c echo.Context, sessionConfig SessionConfig, username string) {
+func setSession(c echo.Context, sessionConfig conf.SessionConfig, username string) {
 	sess, _ := session.Get(sessionConfig.Name, c)
 	sess.Options = &sessions.Options{
 		Domain:   sessionConfig.Domain,
@@ -172,11 +186,11 @@ func setSession(c echo.Context, sessionConfig SessionConfig, username string) {
 	sess.Save(c.Request(), c.Response())
 }
 
-func getSession(c echo.Context, sessionConfig SessionConfig) string {
+func getSession(c echo.Context, sessionConfig conf.SessionConfig) string {
 	sess, _ := session.Get(sessionConfig.Name, c)
 	if v := sess.Values["username"]; v != nil {
 		if username, ok := v.(string); ok {
-			if !isBlank(username) {
+			if util.IsNotBlank(username) {
 				return username
 			}
 		}
