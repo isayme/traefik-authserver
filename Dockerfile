@@ -9,7 +9,7 @@ FROM node:22-slim as node-builder
 WORKDIR /app
 
 COPY web .
-RUN npm i -g pnpm
+RUN npm i -g pnpm@10
 RUN pnpm i
 RUN pnpm build
 

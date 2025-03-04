@@ -56,7 +56,14 @@ export default function LoginForm() {
   }
 
   function handleLoginWithGithub() {
-    navigate('/oauth/github/login')
+    let to = '/oauth/github/login'
+
+    const nextUrl = searchParams.get('next_url')
+    if (nextUrl) {
+      to = `${to}?next_url=${nextUrl}`
+    }
+
+    window.location.href = to
   }
 
   function handleEnter(event: React.KeyboardEvent<HTMLInputElement>) {

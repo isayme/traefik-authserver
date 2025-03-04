@@ -132,12 +132,15 @@ func main() {
 		githubService := service.NewGithub(&githubConfig)
 
 		e.GET("/oauth/github/login", func(c echo.Context) error {
-			url := githubService.GenAuthorizeUrl()
+			nextUrl := c.QueryParam("next_url")
+			url := githubService.GenAuthorizeUrl(nextUrl)
+
 			return c.Redirect(http.StatusFound, url)
 		})
 
 		e.GET("/oauth/github/redirect", func(c echo.Context) error {
 			code := c.QueryParam("code")
+			nextUrl := c.QueryParam("next_url")
 			// state := c.QueryParam("state")
 
 			ctx := c.Request().Context()
@@ -155,6 +158,10 @@ func main() {
 			for _, user := range globalConfig.Users {
 				if user.Github == githubUser.Login {
 					setSession(c, globalConfig.Session, user.Username)
+
+					if util.IsNotBlank(nextUrl) {
+						return c.Redirect(http.StatusFound, nextUrl)
+					}
 					return c.JSON(http.StatusOK, LoginResp{Username: user.Username})
 				}
 			}

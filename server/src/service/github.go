@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/isayme/go-logger"
 	"github.com/isayme/traefik-authserver/server/src/conf"
 	"github.com/isayme/traefik-authserver/server/src/util"
 )
@@ -29,12 +30,32 @@ func NewGithub(config *conf.Github) *Github {
 	}
 }
 
-func (g *Github) GenAuthorizeUrl() string {
+func (g *Github) getRedirectUrl(nextUrl string) string {
+	redirectUrl := g.redirectUrl
+	if util.IsNotBlank(redirectUrl) && util.IsNotBlank(nextUrl) {
+		u, err := url.Parse(redirectUrl)
+		if err != nil {
+			logger.Warnw("url.Parse fail", "redirectUrl", redirectUrl)
+		} else {
+			query := u.Query()
+			query.Add("next_url", nextUrl)
+			u.RawQuery = query.Encode()
+
+			redirectUrl = u.String()
+		}
+	}
+
+	return redirectUrl
+}
+
+func (g *Github) GenAuthorizeUrl(nextUrl string) string {
+	redirectUrl := g.getRedirectUrl(nextUrl)
+
 	state := util.UUID()
-	if util.IsBlank(g.redirectUrl) {
+	if util.IsBlank(redirectUrl) {
 		return fmt.Sprintf("%s?client_id=%s&scope=%s&state=%s", GithubOAuthAuthorizeUrl, g.clientId, ScopeUserEmail, state)
 	} else {
-		return fmt.Sprintf("%s?client_id=%s&scope=%s&state=%s&redirect_uri=%s", GithubOAuthAuthorizeUrl, g.clientId, ScopeUserEmail, state, url.QueryEscape(g.redirectUrl))
+		return fmt.Sprintf("%s?client_id=%s&scope=%s&state=%s&redirect_uri=%s", GithubOAuthAuthorizeUrl, g.clientId, ScopeUserEmail, state, url.QueryEscape(redirectUrl))
 	}
 }
 
