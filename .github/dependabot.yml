@@ -5,8 +5,27 @@
 
 version: 2
 updates:
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/web" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 14
+
+    open-pull-requests-limit: 10
+
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-patch"
+
+    groups:
+      minor-deps:
+        update-types:
+          - "minor"
+
   - package-ecosystem: "gomod" # See documentation for possible values
-    directory: "/" # Location of package manifests
+    directory: "/server" # Location of package manifests
     schedule:
       interval: "weekly"
     cooldown:
