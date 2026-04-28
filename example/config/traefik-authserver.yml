@@ -6,4 +6,5 @@ session:
 
 users:
   - username: test
-    password: $2a$10$ozIShZ6AlmaHTWHR4tM/0uk5t5/uPuN3w4oL.rTxWFRdQLFUB9Iiy
+    # plain password: test
+    password: $2a$12$3omo8yfJJotGka4PkUWjw.FD5juAS.G9XKWK1ywXb6Oe7CnXd5rgi
