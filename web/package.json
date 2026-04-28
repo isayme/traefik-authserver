@@ -37,7 +37,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.2",
-    "vite": "^5.1.4"
+    "vite": "^8.0.8"
   },
   "resolutions": {
     "rollup": "npm:@rollup/wasm-node"
