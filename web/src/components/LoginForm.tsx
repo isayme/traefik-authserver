@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,16 +6,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Github } from 'lucide-react'
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { TbBrandGithub } from "react-icons/tb";
 
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { login } from '@/utils/account'
-import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useToast } from './ui/use-toast'
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { login } from '@/utils/account';
+import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useToast } from './ui/use-toast';
 
 export default function LoginForm() {
   const navigate = useNavigate()
@@ -134,7 +134,7 @@ export default function LoginForm() {
           type='button'
           onClick={handleLoginWithGithub}
         >
-          <Github className='mr-2 h-4 w-4' />
+          <TbBrandGithub className='mr-2 h-4 w-4' />
           Login With GitHub
         </Button>
       </div>
