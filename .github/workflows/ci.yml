@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-go:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./server
+
+    strategy:
+      matrix:
+        go-version: [1.23, 1.24, 1.25, 1.26]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '${{ matrix.go-version }}'
+
+      - name: Build
+        run: mkdir -p dist && go build -o ./dist/traefik-authserver main.go
+  
+  build-web:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./web
+
+    strategy:
+      matrix:
+        node-version: [20, 22, 24]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+      - run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+

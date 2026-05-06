@@ -42,3 +42,17 @@ updates:
       minor-deps:
         update-types:
           - "minor"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 14
+
+    open-pull-requests-limit: 10
+
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-patch"
