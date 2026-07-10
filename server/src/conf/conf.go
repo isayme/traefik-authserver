@@ -24,7 +24,8 @@ type Github struct {
 }
 
 type Config struct {
-	Session SessionConfig `json:"session" yaml:"session"`
-	Users   []User        `json:"users" yaml:"users"`
-	Github  Github        `json:"github" yaml:"github"`
+	Session  SessionConfig   `json:"session" yaml:"session"`
+	Sessions []SessionConfig `json:"sessions" yaml:"sessions"`
+	Users    []User          `json:"users" yaml:"users"`
+	Github   Github          `json:"github" yaml:"github"`
 }

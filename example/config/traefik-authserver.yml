@@ -1,8 +1,20 @@
-session:
-  name: sid
-  secret: 123
-  domain: "localtest.me"
-  loginUrl: http://auth.localtest.me/login
+# Option 1: Multi-domain (recommended)
+sessions:
+  - name: sid
+    secret: "123"
+    domain: "*.localtest.me"
+    loginUrl: http://auth.localtest.me/login
+  # - name: sid
+  #   secret: "456"
+  #   domain: "*.example.com"
+  #   loginUrl: http://auth.example.com/login
+
+# Option 2: Single domain (backward compatible)
+# session:
+#   name: sid
+#   secret: 123
+#   domain: "localtest.me"
+#   loginUrl: http://auth.localtest.me/login
 
 users:
   - username: test

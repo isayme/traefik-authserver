@@ -7,7 +7,6 @@ require (
 	github.com/isayme/go-config v0.3.0
 	github.com/isayme/go-logger v0.3.1
 	github.com/isayme/go-request v0.0.0-20210512162839-ece4445048df
-	github.com/labstack/echo-contrib v0.50.1
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/labstack/gommon v0.5.0
 	github.com/satori/go.uuid v1.2.0
@@ -15,7 +14,6 @@ require (
 )
 
 require (
-	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.21 // indirect

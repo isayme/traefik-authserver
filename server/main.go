@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/gorilla/sessions"
 	"github.com/isayme/go-config"
 	"github.com/isayme/traefik-authserver/server/src/conf"
 	"github.com/isayme/traefik-authserver/server/src/service"
 	"github.com/isayme/traefik-authserver/server/src/util"
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -36,6 +36,13 @@ type GetMeResp struct {
 	Username string `json:"username"`
 }
 
+type sessionEntry struct {
+	Config conf.SessionConfig
+	Store  sessions.Store
+}
+
+var sessionEntries []sessionEntry
+
 func main() {
 	globalConfig := conf.Config{
 		Session: conf.SessionConfig{
@@ -47,13 +54,34 @@ func main() {
 	}
 	config.Parse(&globalConfig)
 
-	if util.IsBlank(globalConfig.Session.Secret) {
-		log.Error("config session.secret is required")
-		return
-	}
-	if util.IsBlank(globalConfig.Session.LoginUrl) {
-		log.Error("config session.loginUrl is required")
-		return
+	if len(globalConfig.Sessions) > 0 {
+		for i, s := range globalConfig.Sessions {
+			if util.IsBlank(s.Secret) {
+				log.Errorf("config sessions[%d].secret is required", i)
+				return
+			}
+			if util.IsBlank(s.LoginUrl) {
+				log.Errorf("config sessions[%d].loginUrl is required", i)
+				return
+			}
+			sessionEntries = append(sessionEntries, sessionEntry{
+				Config: s,
+				Store:  sessions.NewCookieStore([]byte(s.Secret)),
+			})
+		}
+	} else {
+		if util.IsBlank(globalConfig.Session.Secret) {
+			log.Error("config session.secret is required")
+			return
+		}
+		if util.IsBlank(globalConfig.Session.LoginUrl) {
+			log.Error("config session.loginUrl is required")
+			return
+		}
+		sessionEntries = append(sessionEntries, sessionEntry{
+			Config: globalConfig.Session,
+			Store:  sessions.NewCookieStore([]byte(globalConfig.Session.Secret)),
+		})
 	}
 
 	e := echo.New()
@@ -63,8 +91,6 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.RequestID())
 	e.Use(middleware.BodyLimit("2M"))
-
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte(globalConfig.Session.Secret))))
 
 	e.POST("/api/login", func(c echo.Context) error {
 		reqBody := LoginReq{}
@@ -80,7 +106,7 @@ func main() {
 		for _, user := range globalConfig.Users {
 			if user.Username == username {
 				if verifyPassword(user.Password, reqBody.Password) {
-					setSession(c, globalConfig.Session, username)
+					setSession(c, username)
 					return c.JSON(http.StatusOK, LoginResp{Username: username})
 				}
 			}
@@ -89,12 +115,12 @@ func main() {
 	})
 
 	e.POST("/api/logout", func(c echo.Context) error {
-		setSession(c, globalConfig.Session, "")
+		setSession(c, "")
 		return c.JSON(http.StatusOK, LogoutResp{})
 	})
 
 	e.GET("/api/me", func(c echo.Context) error {
-		username := getSession(c, globalConfig.Session)
+		username := getSession(c)
 		if util.IsNotBlank(username) {
 			return c.JSON(http.StatusOK, GetMeResp{Username: username})
 		}
@@ -102,12 +128,17 @@ func main() {
 	})
 
 	e.GET("/api/check-login", func(c echo.Context) error {
-		username := getSession(c, globalConfig.Session)
+		username := getSession(c)
 		if util.IsNotBlank(username) {
 			return c.JSON(http.StatusOK, GetMeResp{Username: username})
 		}
 
-		location := globalConfig.Session.LoginUrl
+		entry := getEntry(c)
+		if entry == nil {
+			return responseError(c, http.StatusNotFound, "NoSessionConfig", "no matching session config")
+		}
+
+		location := entry.Config.LoginUrl
 		uri, err := url.Parse(location)
 		if err != nil {
 			return c.Redirect(http.StatusFound, location)
@@ -157,7 +188,7 @@ func main() {
 
 			for _, user := range globalConfig.Users {
 				if user.Github == githubUser.Login {
-					setSession(c, globalConfig.Session, user.Username)
+					setSession(c, user.Username)
 
 					if util.IsNotBlank(nextUrl) {
 						return c.Redirect(http.StatusFound, nextUrl)
@@ -179,22 +210,55 @@ func main() {
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
-func setSession(c echo.Context, sessionConfig conf.SessionConfig, username string) {
-	sess, _ := session.Get(sessionConfig.Name, c)
+func getHost(c echo.Context) string {
+	host := c.Request().Header.Get("X-Forwarded-Host")
+	if util.IsNotBlank(host) {
+		return host
+	}
+	return c.Request().Host
+}
+
+func matchSession(host string) *sessionEntry {
+	for _, entry := range sessionEntries {
+		domain := entry.Config.Domain
+		if strings.HasSuffix(host, domain) {
+			return &entry
+		}
+	}
+	return nil
+}
+
+func getEntry(c echo.Context) *sessionEntry {
+	host := getHost(c)
+	return matchSession(host)
+}
+
+func setSession(c echo.Context, username string) {
+	entry := getEntry(c)
+	if entry == nil {
+		return
+	}
+
+	sess, _ := entry.Store.Get(c.Request(), entry.Config.Name)
 	sess.Options = &sessions.Options{
-		Domain:   sessionConfig.Domain,
+		Domain:   entry.Config.Domain,
 		Path:     "/",
-		MaxAge:   sessionConfig.MaxAge,
-		HttpOnly: sessionConfig.HttpOnly,
-		Secure:   sessionConfig.Secure,
+		MaxAge:   entry.Config.MaxAge,
+		HttpOnly: entry.Config.HttpOnly,
+		Secure:   entry.Config.Secure,
 	}
 
 	sess.Values["username"] = username
 	sess.Save(c.Request(), c.Response())
 }
 
-func getSession(c echo.Context, sessionConfig conf.SessionConfig) string {
-	sess, _ := session.Get(sessionConfig.Name, c)
+func getSession(c echo.Context) string {
+	entry := getEntry(c)
+	if entry == nil {
+		return ""
+	}
+
+	sess, _ := entry.Store.Get(c.Request(), entry.Config.Name)
 	if v := sess.Values["username"]; v != nil {
 		if username, ok := v.(string); ok {
 			if util.IsNotBlank(username) {
@@ -223,7 +287,6 @@ func responseError(c echo.Context, statusCode int, errCode, errMessage string) e
 // }
 
 func verifyPassword(hash, password string) bool {
-	// 验证密码
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
