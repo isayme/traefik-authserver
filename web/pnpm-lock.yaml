@@ -30,8 +30,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.1
       lucide-react:
-        specifier: ^1.46.0
-        version: 1.46.0(react@19.3.0)
+        specifier: ^1.47.0
+        version: 1.47.0(react@19.3.0)
       react:
         specifier: ^19.3.0
         version: 19.3.0
@@ -53,10 +53,10 @@ importers:
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.0
-        version: 4.3.0(vite@8.3.0(@types/node@26.5.0)(jiti@2.7.0))
+        version: 4.3.0(vite@8.3.0(@types/node@26.6.2)(jiti@2.7.0))
       '@types/node':
-        specifier: ^26.5.0
-        version: 26.5.0
+        specifier: ^26.6.2
+        version: 26.6.2
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
@@ -71,7 +71,7 @@ importers:
         version: 7.18.0(eslint@8.57.1(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
       '@vitejs/plugin-react':
         specifier: ^6.1.0
-        version: 6.1.0(vite@8.3.0(@types/node@26.5.0)(jiti@2.7.0))
+        version: 6.1.0(vite@8.3.0(@types/node@26.6.2)(jiti@2.7.0))
       eslint:
         specifier: ^8.56.0
         version: 8.57.1(supports-color@7.2.0)
@@ -89,7 +89,7 @@ importers:
         version: 7.0.2
       vite:
         specifier: ^8.3.0
-        version: 8.3.0(@types/node@26.5.0)(jiti@2.7.0)
+        version: 8.3.0(@types/node@26.6.2)(jiti@2.7.0)
 
 packages:
 
@@ -616,8 +616,8 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@types/node@26.5.0':
-    resolution: {integrity: sha512-dVSGpriSoCgz8WnDNTuSSuSv1PC/ALXihO4ulRZt7Md8k9mlbdin3lGOcDE8SnWOgf513ByWlXd7BK4azmyg/A==}
+  '@types/node@26.6.2':
+    resolution: {integrity: sha512-X1P21scMv4zGKLYqjdGjaKa7COa0RKVYYZZN/NfvLQ1JegxFhdhpZG/Lyn8AXx6CDUavKAd11v6BvfpkDByK8g==}
 
   '@types/react-dom@19.3.0':
     resolution: {integrity: sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==}
@@ -1422,8 +1422,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.46.0:
-    resolution: {integrity: sha512-Bv+FZXgZPrxc/NCl1e7JJVQFLdiCxYgxNVhqoV7X0p6I8ADJo8DxBnK1auH0fZz4AmqOJ3jgneL4f1i8LJQRAA==}
+  lucide-react@1.47.0:
+    resolution: {integrity: sha512-o8C23aXpNQypRY73W7fW02EyvWJinEMXgKeGjFoKym0zj3Q73hD97A1IQps1g8C14HTGsOpZL0Am+xjfgFZAbg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -2196,14 +2196,14 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.3.0
       '@tailwindcss/oxide-win32-x64-msvc': 4.3.0
 
-  '@tailwindcss/vite@4.3.0(vite@8.3.0(@types/node@26.5.0)(jiti@2.7.0))':
+  '@tailwindcss/vite@4.3.0(vite@8.3.0(@types/node@26.6.2)(jiti@2.7.0))':
     dependencies:
       '@tailwindcss/node': 4.3.0
       '@tailwindcss/oxide': 4.3.0
       tailwindcss: 4.3.0
-      vite: 8.3.0(@types/node@26.5.0)(jiti@2.7.0)
+      vite: 8.3.0(@types/node@26.6.2)(jiti@2.7.0)
 
-  '@types/node@26.5.0':
+  '@types/node@26.6.2':
     dependencies:
       undici-types: 8.9.0
 
@@ -2358,10 +2358,10 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@vitejs/plugin-react@6.1.0(vite@8.3.0(@types/node@26.5.0)(jiti@2.7.0))':
+  '@vitejs/plugin-react@6.1.0(vite@8.3.0(@types/node@26.6.2)(jiti@2.7.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.3.0(@types/node@26.5.0)(jiti@2.7.0)
+      vite: 8.3.0(@types/node@26.6.2)(jiti@2.7.0)
 
   acorn-jsx@5.3.2(acorn@8.14.0):
     dependencies:
@@ -2920,7 +2920,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.46.0(react@19.3.0):
+  lucide-react@1.47.0(react@19.3.0):
     dependencies:
       react: 19.3.0
 
@@ -3162,7 +3162,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  vite@8.3.0(@types/node@26.5.0)(jiti@2.7.0):
+  vite@8.3.0(@types/node@26.6.2)(jiti@2.7.0):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -3170,7 +3170,7 @@ snapshots:
       rolldown: 1.2.8
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 26.5.0
+      '@types/node': 26.6.2
       fsevents: 2.3.3
       jiti: 2.7.0
 
